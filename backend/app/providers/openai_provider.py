@@ -69,7 +69,13 @@ class OpenAIProvider:
                 top_logprobs=settings.top_logprobs,
             )
         except openai.APIStatusError as exc:
-            raise ProviderError(f"OpenAI error {exc.status_code}: {exc.message}") from exc
+            status = 429 if exc.status_code == 429 else 502
+            hint = ""
+            if exc.status_code == 400 and "logprobs" in str(exc.message).lower():
+                hint = " This endpoint/model does not seem to support logprobs."
+            raise ProviderError(
+                f"Upstream error {exc.status_code}: {exc.message}{hint}", status_code=status
+            ) from exc
         except openai.APIError as exc:
             raise ProviderError(f"OpenAI request failed: {exc}") from exc
 
@@ -88,7 +94,11 @@ class OpenAIProvider:
         )
 
 
-def create_openai_provider(api_key: str, base_url: str | None, timeout: float) -> OpenAIProvider:
+def create_openai_provider(
+    api_key: str, base_url: str | None, timeout: float, http_client: Any = None
+) -> OpenAIProvider:
     from openai import AsyncOpenAI
 
-    return OpenAIProvider(AsyncOpenAI(api_key=api_key, base_url=base_url, timeout=timeout))
+    return OpenAIProvider(
+        AsyncOpenAI(api_key=api_key, base_url=base_url, timeout=timeout, http_client=http_client)
+    )

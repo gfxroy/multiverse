@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import Protocol, runtime_checkable
 
 from ..schemas import GenerationSettings, ProviderResult
@@ -28,3 +29,18 @@ class CompletionProvider(Protocol):
     async def complete(
         self, prompt: str, settings: GenerationSettings, prefix: str = ""
     ) -> ProviderResult: ...
+
+
+class ConcurrencyLimited:
+    """Caps simultaneous upstream calls (shared across all visitors) with a semaphore."""
+
+    def __init__(self, inner: CompletionProvider, semaphore: asyncio.Semaphore) -> None:
+        self.inner = inner
+        self.semaphore = semaphore
+        self.name = inner.name
+
+    async def complete(
+        self, prompt: str, settings: GenerationSettings, prefix: str = ""
+    ) -> ProviderResult:
+        async with self.semaphore:
+            return await self.inner.complete(prompt, settings, prefix)
