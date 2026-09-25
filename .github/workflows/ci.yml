@@ -76,6 +76,30 @@ jobs:
         run: docker compose logs
       - run: docker compose down
 
+  space-image:
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build single-container image (Hugging Face Spaces)
+        run: docker build -f Dockerfile.space -t multiverse-space .
+      - name: Smoke test on port 7860 (demo mode)
+        run: |
+          docker run -d --name space -p 7860:7860 multiverse-space
+          for i in $(seq 1 30); do
+            curl -fsS http://localhost:7860/api/health && break
+            sleep 2
+          done
+          curl -fsS http://localhost:7860/ | grep -q "Multiverse"
+          curl -fsS http://localhost:7860/api/config | python3 -c "import json,sys; c=json.load(sys.stdin); assert c['limits']['max_top_logprobs'] == 10, c"
+          curl -fsS -X POST http://localhost:7860/api/generate \
+            -H 'Content-Type: application/json' \
+            -d '{"prompt":"Tell me a story about the sea","settings":{"max_tokens":20}}' \
+            | python3 -c "import json,sys; t=json.load(sys.stdin); assert t['nodes'][t['root_id']]['tokens']"
+      - name: Logs on failure
+        if: failure()
+        run: docker logs space
+
   secrets:
     runs-on: ubuntu-latest
     steps:

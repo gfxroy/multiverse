@@ -141,3 +141,23 @@ async def test_errors_map_to_provider_errors(monkeypatch: pytest.MonkeyPatch) ->
     with pytest.raises(ProviderError, match="API key not valid") as info:
         await make_provider(bad_key).complete("p", GenerationSettings())
     assert info.value.status_code == 502
+
+
+async def test_end_to_end_against_fake_gemini_server() -> None:
+    """Full HTTP round trip through a Gemini-shaped ASGI app (see tests/fake_gemini.py)."""
+    from app import tree as T
+    from app.schemas import ForkSettings
+
+    from .fake_gemini import app as fake_app
+
+    client = httpx.AsyncClient(transport=httpx.ASGITransport(app=fake_app))
+    provider = GeminiProvider("k", "http://fake/v1beta", client=client)
+    s = GenerationSettings(model="gemini-2.5-flash", temperature=0.0, max_tokens=25, top_logprobs=5)
+    result = await provider.complete("Write a story about a lighthouse keeper", s)
+    assert 0 < len(result.tokens) <= 25
+    assert all(len(t.top) == 5 for t in result.tokens)
+    tree = T.create_tree(
+        "Write a story about a lighthouse keeper", s, ForkSettings(), result, "gemini"
+    )
+    created, _ = await T.explore(tree, tree.root_id, provider, top_k=2, depth=1)
+    assert created and all(tree.nodes[c].method == "chat-continuation" for c in created)

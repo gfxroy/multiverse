@@ -10,6 +10,7 @@ Requires `pip install playwright && playwright install chromium`, plus ffmpeg fo
 from __future__ import annotations
 
 import argparse
+import re
 import shutil
 import subprocess
 import tempfile
@@ -49,9 +50,7 @@ def capture(url: str, out: Path) -> None:
         generate(page)
 
         # 1. Hover a fork token to show the alternatives tooltip.
-        fork_pos = (
-            page.locator("[data-testid=fork-sidebar] li button").nth(1).inner_text()
-        )
+        fork_pos = page.locator("[data-testid=fork-sidebar] li button").nth(1).inner_text()
         pos = fork_pos.split()[0].lstrip("#")
         page.locator(f"[data-testid=token][data-position='{pos}']").hover()
         page.wait_for_timeout(500)
@@ -67,16 +66,14 @@ def capture(url: str, out: Path) -> None:
         # 3. Branch, auto-explore, and show the tree.
         branch_on_top_fork(page)
         page.get_by_role("button", name="Auto-explore").click()
-        page.wait_for_selector("text=Explored", timeout=20000)
+        page.get_by_text(re.compile(r"^Explored \d+")).wait_for(timeout=30000)
         page.wait_for_timeout(1500)
         page.screenshot(path=out / "explore-tree.png")
 
         # 4. Entropy colouring.
         page.get_by_role("button", name="entropy", exact=True).click()
         page.wait_for_timeout(400)
-        page.locator("[data-testid=token-view]").screenshot(
-            path=out / "entropy-view.png"
-        )
+        page.locator("[data-testid=token-view]").screenshot(path=out / "entropy-view.png")
         page.get_by_role("button", name="probability", exact=True).click()
 
         # 5. Compare mode.
@@ -110,7 +107,7 @@ def record_gif(url: str, out: Path) -> None:
         branch_on_top_fork(page, pause=1300)
         page.wait_for_timeout(800)
         page.get_by_role("button", name="Auto-explore").click()
-        page.wait_for_selector("text=Explored", timeout=20000)
+        page.get_by_text(re.compile(r"^Explored \d+")).wait_for(timeout=30000)
         page.wait_for_timeout(1800)
         page.locator(".react-flow__node").first.click()
         page.wait_for_timeout(1500)

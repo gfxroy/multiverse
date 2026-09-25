@@ -55,6 +55,12 @@ The returned tokens (and their logprobs) are appended after the forced token. Th
 is marked `method: "chat-continuation"` in the tree, and the UI shows which method produced
 each node.
 
+The native **Gemini** provider does the same thing in Gemini's `contents` format: a `user`
+turn with the prompt, a `model` turn with the prefix and forced token, and a `user` turn
+with the continue instruction. It reads per-token distributions from
+`candidates[0].logprobsResult` (`chosenCandidates` and `topCandidates`). Google documents
+logprobs for Gemini 2.x models only; 3.x models don't return them.
+
 ### Limitations (please read)
 
 - **The distributions are conditional on a different context.** In a branch, the model is
@@ -73,8 +79,9 @@ each node.
   one "tail" bucket for the unobserved mass, which gives a *lower bound* on the true entropy.
   The sampled token can fall outside the top-k. The API then reports it with a very low
   logprob (`-9999`), and the UI says so.
-- **Model support varies.** Reasoning models generally reject `logprobs`. Use a
-  chat model that returns logprobs (for example `gpt-4o-mini`). If a model returns no
+- **Model support varies.** Reasoning models generally reject `logprobs`, Gemini 3.x doesn't
+  return them, and Gemini's OpenAI-compatible endpoint rejects the parameter. Use a model
+  that returns logprobs (for example `gpt-4o-mini` or `gemini-2.5-flash`). If a model returns no
   logprobs, the backend responds with a clear 502 error.
 
 ### Why not use something else?
