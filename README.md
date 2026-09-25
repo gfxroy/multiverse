@@ -10,6 +10,7 @@ Multiverse shows an LLM completion one token at a time, with the probability of 
 and the alternatives the model considered. Click any token to force a different choice,
 and the story branches into a tree of alternate futures you can zoom around.
 
+[![CI](https://github.com/gfxroy/multiverse/actions/workflows/ci.yml/badge.svg)](https://github.com/gfxroy/multiverse/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-async-009688?logo=fastapi&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
@@ -247,6 +248,8 @@ make lint    # ruff, ruff format, mypy --strict · oxlint, prettier, tsc
 - **Frontend (vitest + Testing Library):** path reconstruction, tree layout, fork scoring
   (mirrors the backend), permalink round-trips, colour scales and the branch menu
   component.
+- **CI** (GitHub Actions): lint, type-check, tests, production build, a Docker Compose
+  build with an end-to-end smoke request in demo mode, and a gitleaks secret scan.
 
 ## Project layout
 
