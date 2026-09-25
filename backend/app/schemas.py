@@ -178,6 +178,7 @@ class ModelsInfo(BaseModel):
         default_factory=dict, description="Suggested models per provider (for own-key use)."
     )
     allow_byok: bool = True
+    byok_providers: list[str] = Field(default_factory=lambda: ["openai", "gemini"])
     max_tokens_limit: int
     limits: LimitsInfo | None = None
     version: str

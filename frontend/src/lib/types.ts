@@ -103,6 +103,7 @@ export interface ModelsInfo {
   models: string[]
   provider_models: Record<string, string[]>
   allow_byok: boolean
+  byok_providers?: ('openai' | 'gemini')[]
   max_tokens_limit: number
   limits: LimitsInfo | null
   version: string

@@ -15,7 +15,7 @@ ResolvedProvider = Literal["openai", "gemini", "mock"]
 PROVIDER_MODELS: dict[str, list[str]] = {
     "openai": ["gpt-4o-mini", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-4o"],
     # Gemini 3.x models no longer return logprobs, so only 2.x models are suggested.
-    "gemini": ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"],
+    "gemini": ["gemini-2.5-flash", "gemini-2.5-flash-lite"],
 }
 PROVIDER_MODELS["mock"] = PROVIDER_MODELS["openai"]
 DEFAULT_MODELS = PROVIDER_MODELS["openai"]
@@ -66,6 +66,12 @@ class Settings(BaseSettings):
     daily_call_cap: int = Field(default=0, ge=0, alias="MULTIVERSE_DAILY_CALL_CAP")
     byok_rate_multiplier: int = Field(default=5, ge=1, alias="MULTIVERSE_BYOK_RATE_MULTIPLIER")
     allow_byok: bool = Field(default=True, alias="MULTIVERSE_ALLOW_BYOK")
+    byok_providers: list[Literal["openai", "gemini"]] = Field(
+        default=["openai", "gemini"], alias="MULTIVERSE_BYOK_PROVIDERS"
+    )
+    # Opt-in diagnostic: GET /api/debug/client echoes the caller's own IP as the app resolves
+    # it, to check MULTIVERSE_TRUSTED_PROXY_HOPS behind a proxy. Keep off in normal operation.
+    debug_client_ip: bool = Field(default=False, alias="MULTIVERSE_DEBUG_CLIENT_IP")
     trusted_proxy_hops: int = Field(default=0, ge=0, alias="MULTIVERSE_TRUSTED_PROXY_HOPS")
 
     static_dir: str | None = Field(default=None, alias="MULTIVERSE_STATIC_DIR")

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Annotated, cast
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
 
@@ -62,11 +62,12 @@ def get_context(
     if key and key.strip():
         if not service.settings.allow_byok:
             raise HTTPException(status_code=400, detail="Using your own key is disabled here.")
-        if provider not in ("openai", "gemini"):
+        allowed = service.settings.byok_providers
+        if provider not in allowed:
             raise HTTPException(
-                status_code=400, detail="Own-key provider must be openai or gemini."
+                status_code=400, detail=f"Own-key provider must be one of: {', '.join(allowed)}."
             )
-        byok = (cast(ByokProvider, provider), key.strip())
+        byok = (provider, key.strip())
     ip = client_ip(request, service.settings.trusted_proxy_hops)
     ctx = service.context(ip, byok)
     request.state.budget = ctx.budget
@@ -94,6 +95,20 @@ async def health(service: Service) -> dict[str, object]:
     }
 
 
+@router.get("/debug/client", include_in_schema=False)
+async def debug_client(request: Request, service: Service) -> dict[str, object]:
+    """The caller's own address as the app sees it (only when explicitly enabled)."""
+    s = service.settings
+    if not s.debug_client_ip:
+        raise HTTPException(status_code=404, detail="Not Found")
+    return {
+        "resolved_ip": client_ip(request, s.trusted_proxy_hops),
+        "trusted_proxy_hops": s.trusted_proxy_hops,
+        "x_forwarded_for": request.headers.get("x-forwarded-for"),
+        "peer": request.client.host if request.client else None,
+    }
+
+
 @router.get("/config", response_model=ModelsInfo)
 async def config(request: Request, service: Service) -> ModelsInfo:
     s = service.settings
@@ -105,6 +120,7 @@ async def config(request: Request, service: Service) -> ModelsInfo:
         models=s.models,
         provider_models={k: v for k, v in PROVIDER_MODELS.items() if k != "mock"},
         allow_byok=s.allow_byok,
+        byok_providers=list(s.byok_providers),
         max_tokens_limit=s.max_tokens_limit,
         limits=LimitsInfo(
             rate_limit_calls=s.rate_limit_calls,

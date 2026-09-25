@@ -40,7 +40,7 @@ def gen(client: TestClient, **headers: str) -> object:
 def test_settings_resolve_gemini_defaults() -> None:
     s = public_settings()
     assert s.resolved_provider == "gemini" and not s.demo_mode
-    assert s.default_model == "gemini-2.5-flash" and "gemini-2.0-flash" in s.models
+    assert s.default_model == "gemini-2.5-flash" and "gemini-2.5-flash-lite" in s.models
     custom = Settings(  # type: ignore[call-arg]
         _env_file=None, OPENAI_API_KEY="k", MULTIVERSE_DEFAULT_MODEL="my-model"
     )
@@ -173,3 +173,21 @@ def test_serves_built_frontend(tmp_path: Path, settings: Settings) -> None:
     assert client.get("/../pyproject.toml").status_code in (200, 404)
     assert "hatchling" not in client.get("/..%2Fpyproject.toml").text
     assert client.get("/api/health").json()["status"] == "ok"
+
+
+def test_byok_providers_can_be_restricted() -> None:
+    client = make_client(public_settings(MULTIVERSE_BYOK_PROVIDERS=["openai"]))
+    assert client.get("/api/config").json()["byok_providers"] == ["openai"]
+    res = gen(client, **{"X-Multiverse-Provider": "gemini", "X-Multiverse-Key": "k"})
+    assert res.status_code == 400 and "openai" in res.json()["detail"]
+
+
+def test_debug_client_endpoint_is_opt_in() -> None:
+    assert make_client(public_settings()).get("/api/debug/client").status_code == 404
+    client = make_client(
+        public_settings(MULTIVERSE_DEBUG_CLIENT_IP=True, MULTIVERSE_TRUSTED_PROXY_HOPS=1)
+    )
+    body = client.get(
+        "/api/debug/client", headers={"X-Forwarded-For": "6.6.6.6, 203.0.113.9"}
+    ).json()
+    assert body["resolved_ip"] == "203.0.113.9" and body["trusted_proxy_hops"] == 1

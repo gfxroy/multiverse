@@ -301,6 +301,8 @@ All settings are environment variables (see [`.env.example`](.env.example)):
 | `MULTIVERSE_RATE_LIMIT_CALLS` / `_WINDOW` | `0` / `600` | Model calls per visitor per window (0 = off) |
 | `MULTIVERSE_DAILY_CALL_CAP` | `0` | Global model calls per UTC day with the server key (0 = off) |
 | `MULTIVERSE_ALLOW_BYOK` | `true` | Let visitors use their own key |
+| `MULTIVERSE_BYOK_PROVIDERS` | `["openai","gemini"]` | Providers offered in the "Use your key" menu |
+| `MULTIVERSE_DEBUG_CLIENT_IP` | `false` | Enable `GET /api/debug/client` (shows callers their own resolved IP; for checking proxy hops) |
 | `MULTIVERSE_TRUSTED_PROXY_HOPS` | `0` | Reverse proxies in front of the app (for visitor IPs) |
 | `MULTIVERSE_STATIC_DIR` | *(unset)* | Serve a built frontend from FastAPI (single container) |
 | `MULTIVERSE_CACHE_SIZE` / `_TTL` | `512` / `3600` | Provider cache entries / seconds |

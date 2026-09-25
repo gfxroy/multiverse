@@ -150,10 +150,10 @@ export function DemoBanner() {
         DEMO MODE
       </span>
       <span>
-        Tokens and probabilities come from a deterministic mock model, not a real LLM. Set{' '}
-        <code className="rounded bg-black/30 px-1 font-mono">OPENAI_API_KEY</code> or{' '}
-        <code className="rounded bg-black/30 px-1 font-mono">GEMINI_API_KEY</code> in{' '}
-        <code className="rounded bg-black/30 px-1 font-mono">.env</code>, or click “Use your key”.
+        Tokens and probabilities come from a deterministic mock model, not a real LLM. Click “Use
+        your key” to run a real model with your own OpenAI key (self-hosting: set{' '}
+        <code className="rounded bg-black/30 px-1 font-mono">OPENAI_API_KEY</code> in{' '}
+        <code className="rounded bg-black/30 px-1 font-mono">.env</code>).
       </span>
     </div>
   )

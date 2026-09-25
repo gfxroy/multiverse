@@ -15,6 +15,7 @@ git clone https://huggingface.co/spaces/<user>/multiverse space && cd space
 rsync -a --delete --exclude .git --exclude node_modules --exclude .venv --exclude dist \
   ../multiverse/backend ../multiverse/frontend ./
 cp ../multiverse/Dockerfile.space Dockerfile
+cp ../multiverse/.dockerignore ../multiverse/LICENSE ./
 cp ../multiverse/deploy/huggingface/README.md README.md
 git add -A && git commit -m "Deploy multiverse" && git push
 ```
@@ -23,7 +24,10 @@ git add -A && git commit -m "Deploy multiverse" && git push
 
 **Secrets** (never commit these):
 
-- `GEMINI_API_KEY`: server-side key (or `OPENAI_API_KEY`)
+- None needed for demo mode. The public demo runs this way (`MULTIVERSE_PROVIDER=mock`),
+  and visitors can add their own OpenAI key in the UI.
+- Optional: `OPENAI_API_KEY` for a server-side key. A Gemini key only works if it can
+  still use 2.x models, because newer Gemini models don't return logprobs.
 
 **Variables** (optional; the defaults are baked into `Dockerfile.space`):
 
@@ -36,6 +40,7 @@ git add -A && git commit -m "Deploy multiverse" && git push
 | `MULTIVERSE_MAX_TOKENS_LIMIT`   | `120`   | server-side `max_tokens` cap                  |
 | `MULTIVERSE_MAX_TOP_LOGPROBS`   | `10`    | server-side `top_logprobs` cap                |
 | `MULTIVERSE_ALLOW_BYOK`         | `true`  | allow visitors to use their own keys          |
+| `MULTIVERSE_BYOK_PROVIDERS`     | both    | e.g. `["openai"]` to hide Gemini              |
 | `MULTIVERSE_TRUSTED_PROXY_HOPS` | `1`     | proxies in front of the app (for visitor IPs) |
 
 Rate-limit state is in memory, which fits a single Space container. It resets when the
