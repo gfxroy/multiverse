@@ -115,3 +115,14 @@ def test_provider_errors_become_502(client: TestClient) -> None:
     client.app.state.service.provider = Failing()  # type: ignore[attr-defined]
     res = client.post("/api/generate", json={"prompt": "x"})
     assert res.status_code == 502 and res.json()["detail"] == "upstream down"
+
+
+def test_explore_respects_updated_fork_thresholds(client: TestClient) -> None:
+    tree = generate(client)
+    # Client tightened thresholds so nothing qualifies as a fork any more.
+    tree["fork_settings"] = {"entropy_threshold": 99, "margin_threshold": 0, "min_alt_prob": 1}
+    res = client.post("/api/explore", json={"tree": tree, "node_id": tree["root_id"]})
+    assert res.status_code == 200
+    body = res.json()
+    assert body["created"] == []
+    assert not any(t["is_fork"] for t in body["tree"]["nodes"][tree["root_id"]]["tokens"])

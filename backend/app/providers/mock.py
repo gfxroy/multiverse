@@ -122,7 +122,7 @@ class MockProvider:
         last2 = tuple(_key(t) for t in context[-2:])
         logits: dict[str, float] = {}
         for tok, evidence in raw.items():
-            logit = 1.6 * math.log(evidence + 0.01)
+            logit = 2.4 * math.log(evidence + 0.01)
             if any(tok in _MODEL.topic_vocab[t] for t in topics):
                 logit += 2.2
             if _key(tok) in prompt_words:

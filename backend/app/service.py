@@ -55,17 +55,22 @@ class MultiverseService:
             req.prompt, settings, req.fork_settings, result, self.provider.name
         )
 
-    async def branch(self, req: BranchRequest) -> BranchResponse:
-        tree = req.tree
+    def _prepare(self, tree: Tree) -> Tree:
+        """Clamp limits and re-mark forks, since clients may have changed the thresholds."""
         tree.settings = self._clamp(tree.settings)
+        for node in tree.nodes.values():
+            mark_forks(node.tokens, tree.fork_settings)
+        return tree
+
+    async def branch(self, req: BranchRequest) -> BranchResponse:
+        tree = self._prepare(req.tree)
         node_id, created = await tree_ops.branch(
             tree, req.node_id, req.position, req.token, self.provider
         )
         return BranchResponse(tree=tree, node_id=node_id, created=created)
 
     async def explore(self, req: ExploreRequest) -> ExploreResponse:
-        tree = req.tree
-        tree.settings = self._clamp(tree.settings)
+        tree = self._prepare(req.tree)
         created, truncated = await tree_ops.explore(
             tree,
             req.node_id,
