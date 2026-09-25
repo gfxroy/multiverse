@@ -1,6 +1,17 @@
 // Mirrors backend/app/forks.py so fork thresholds can be tuned live in the UI.
 import type { ForkSettings, TokenInfo, Tree } from './types'
 
+/** Entropy (bits) of observed probabilities plus one bucket for the unobserved tail. */
+export function truncatedEntropy(probs: number[]): number {
+  const total = probs.reduce((a, b) => a + b, 0)
+  const ps = total > 1 + 1e-6 ? probs.map((p) => p / total) : probs
+  const tail = Math.max(0, 1 - ps.reduce((a, b) => a + b, 0))
+  return Math.max(
+    0,
+    -[...ps, tail].filter((p) => p > 1e-12).reduce((a, p) => a + p * Math.log2(p), 0),
+  )
+}
+
 export const maxEntropy = (k: number) => Math.log2(Math.max(k, 1) + 1)
 
 export function forkScore(t: TokenInfo): number {

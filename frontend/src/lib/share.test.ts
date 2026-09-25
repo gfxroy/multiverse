@@ -8,7 +8,15 @@ describe('share links', () => {
     const tree = sampleTree()
     const encoded = encodeTree(tree)
     expect(encoded).toMatch(/^[A-Za-z0-9+\-$]+$/)
-    expect(decodeTree(encoded)).toEqual(tree)
+    const decoded = decodeTree(encoded)
+    expect(Object.keys(decoded.nodes)).toEqual(Object.keys(tree.nodes))
+    expect(decoded.nodes.c.tokens.map((t) => t.token)).toEqual([' slept'])
+    expect(decoded.nodes.a.tokens[0].forced).toBe(true)
+    // Derived fields are recomputed from logprobs on load.
+    const [orig, back] = [tree.nodes.root.tokens[1], decoded.nodes.root.tokens[1]]
+    expect(back.prob).toBeCloseTo(orig.prob!, 3)
+    expect(back.entropy).toBeCloseTo(orig.entropy, 2)
+    expect(back.margin).toBeCloseTo(orig.margin, 3)
   })
 
   it('builds and parses permalinks', () => {

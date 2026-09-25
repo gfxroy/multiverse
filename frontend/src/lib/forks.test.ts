@@ -1,13 +1,19 @@
 import { describe, expect, it } from 'vitest'
 
 import { sampleTree, tok } from '../test/fixtures'
-import { forkScore, isFork, maxEntropy, remarkTree } from './forks'
+import { forkScore, isFork, maxEntropy, remarkTree, truncatedEntropy } from './forks'
 
 const S = { entropy_threshold: 1.5, margin_threshold: 0.15, min_alt_prob: 0.05 }
 
 describe('fork detection (mirrors backend)', () => {
   it('computes max entropy with a tail bucket', () => {
     expect(maxEntropy(3)).toBeCloseTo(2)
+  })
+
+  it('computes truncated entropy with a tail bucket (matches backend)', () => {
+    expect(truncatedEntropy([0.5, 0.5])).toBeCloseTo(1)
+    expect(truncatedEntropy([0.5])).toBeCloseTo(1) // 0.5 observed + 0.5 tail
+    expect(truncatedEntropy([1])).toBeCloseTo(0)
   })
 
   it('flags close calls but not confident tokens', () => {
