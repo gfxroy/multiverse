@@ -41,11 +41,15 @@ export function TokenView() {
   if (!tree || !active) {
     return (
       <section className="flex min-h-[220px] flex-col items-center justify-center panel p-8 text-center">
-        <div className="mb-3 text-4xl">🌌</div>
-        <h2 className="text-lg font-semibold text-white">Every token is a fork in the road</h2>
-        <p className="mt-2 max-w-md text-sm text-slate-400">
-          Generate a completion to see the probability of every token and the alternatives the model
-          almost chose. Click any token to branch the multiverse.
+        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-neutral-300">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+          </svg>
+        </div>
+        <h2 className="text-sm font-medium text-white">Every token is a fork in the road</h2>
+        <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-neutral-400">
+          Generate a completion to explore token probabilities and alternate branches. Click any token to branch.
         </p>
       </section>
     )
@@ -56,25 +60,27 @@ export function TokenView() {
 
   return (
     <section className="flex min-h-0 flex-col panel" data-testid="token-view">
-      <header className="flex flex-wrap items-center gap-3 border-b border-white/5 px-5 py-3">
+      <header className="flex flex-wrap items-center gap-3 border-b border-white/[0.08] px-5 py-3">
         <h2 className="panel-title">Completion</h2>
-        <div className="flex flex-wrap gap-1.5 text-[11px] text-slate-400">
-          <Pill>{path.length} tokens</Pill>
-          <Pill>depth {depth}</Pill>
-          <Pill>H̄ {meanEntropy.toFixed(2)} bits</Pill>
-          <Pill className="text-amber-300">{forks} fork points</Pill>
-          <Pill>{active.method}</Pill>
+        <div className="flex items-center gap-2 text-xs text-neutral-400">
+          <span>{path.length} tokens</span>
+          <span>·</span>
+          <span>depth {depth}</span>
+          <span>·</span>
+          <span>H̄ {meanEntropy.toFixed(2)} b</span>
+          <span>·</span>
+          <span className="text-neutral-300">{forks} fork points</span>
         </div>
         <div className="ml-auto flex items-center gap-3">
           <Legend mode={colorMode} />
-          <div className="flex rounded-lg border border-white/10 p-0.5 text-xs">
+          <div className="flex rounded-lg border border-white/10 bg-white/[0.04] p-0.5 text-xs">
             {(['probability', 'entropy'] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => setColorMode(m)}
                 className={clsx(
-                  'rounded-md px-2.5 py-1 capitalize transition',
-                  colorMode === m ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white',
+                  'rounded-md px-2.5 py-1 capitalize transition-all duration-150',
+                  colorMode === m ? 'bg-white/15 text-white font-medium shadow-sm' : 'text-neutral-400 hover:text-white',
                 )}
               >
                 {m}
@@ -84,11 +90,11 @@ export function TokenView() {
         </div>
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-        <div className="mb-3 flex gap-2 text-sm">
-          <span className="mt-0.5 shrink-0 rounded-md bg-violet-500/15 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider text-violet-300 uppercase">
-            user
+        <div className="mb-3.5 flex items-start gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-xs">
+          <span className="shrink-0 rounded bg-white/[0.06] px-1.5 py-0.5 text-[10px] font-medium text-neutral-400 uppercase tracking-wider">
+            Prompt
           </span>
-          <p className="text-slate-400 italic">{tree.prompt}</p>
+          <p className="text-neutral-300 leading-relaxed">{tree.prompt}</p>
         </div>
         <TokenStrip
           tokens={path}
@@ -110,33 +116,25 @@ export function TokenView() {
           )}
         />
         {active.finish_reason && (
-          <span className="ml-1 rounded bg-white/5 px-1.5 py-0.5 align-middle text-[10px] text-slate-500">
-            {active.finish_reason === 'length' ? '… max tokens' : '■ stop'}
+          <span className="ml-1 rounded border border-white/10 bg-white/[0.04] px-1.5 py-0.5 align-middle text-[10px] text-neutral-400">
+            {active.finish_reason === 'length' ? '… max tokens' : 'stop'}
           </span>
         )}
         {busy === 'branch' && (
-          <div className="mt-3 animate-pulse text-xs text-violet-300">Generating branch…</div>
+          <div className="mt-3 text-xs text-neutral-400">Generating branch…</div>
         )}
       </div>
     </section>
   )
 }
 
-function Pill({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <span className={clsx('rounded-full border border-white/10 px-2 py-0.5', className)}>
-      {children}
-    </span>
-  )
-}
-
 function Legend({ mode }: { mode: 'probability' | 'entropy' }) {
   const stops = [0, 0.25, 0.5, 0.75, 1].map((t) => scaleColor(mode, t)).join(', ')
   return (
-    <div className="hidden items-center gap-2 text-[10px] text-slate-500 xl:flex">
+    <div className="hidden items-center gap-2 text-[10px] text-neutral-500 xl:flex">
       <span>{mode === 'probability' ? 'unlikely' : 'certain'}</span>
       <span
-        className="h-1.5 w-20 rounded-full"
+        className="h-1.5 w-16 rounded-full"
         style={{ background: `linear-gradient(90deg, ${stops})` }}
       />
       <span>{mode === 'probability' ? 'likely' : 'uncertain'}</span>

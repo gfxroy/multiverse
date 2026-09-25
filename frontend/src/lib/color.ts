@@ -10,25 +10,25 @@ export function tokenColor(
   maxEntropy = 3,
 ): string {
   if (mode === 'probability') {
-    if (prob === null) return 'rgba(148, 163, 184, 0.18)' // custom token: neutral
-    // 0 -> rose (350deg), 1 -> emerald (150deg)
+    if (prob === null) return 'rgba(148, 163, 184, 0.15)' // custom token: neutral
     const p = clamp01(prob)
-    const hue = 350 + (150 + 360 - 350) * p
-    const alpha = 0.12 + 0.38 * (1 - p)
-    return `hsla(${hue % 360}, 85%, 55%, ${alpha.toFixed(3)})`
+    // Apple-style subtle hue shift: soft rose (350deg) for low prob to soft mint/slate (160deg) for high prob
+    const hue = (350 + 170 * p) % 360
+    const alpha = 0.03 + 0.22 * (1 - p)
+    return `hsla(${hue.toFixed(0)}, 65%, 52%, ${alpha.toFixed(3)})`
   }
   const e = clamp01(entropy / maxEntropy)
-  // calm (indigo, faint) -> hot (amber, strong)
-  const hue = 250 - 210 * e
-  const alpha = 0.06 + 0.5 * e
-  return `hsla(${hue}, 90%, 60%, ${alpha.toFixed(3)})`
+  // Subtle calm neutral (220deg) to soft warm amber (35deg)
+  const hue = 220 - 185 * e
+  const alpha = 0.02 + 0.22 * e
+  return `hsla(${hue.toFixed(0)}, 60%, 54%, ${alpha.toFixed(3)})`
 }
 
 /** Solid colour for bars/legends at the same scale. */
 export function scaleColor(mode: ColorMode, t: number): string {
   const v = clamp01(t)
-  if (mode === 'probability') return `hsl(${(350 + 160 * v) % 360}, 85%, 60%)`
-  return `hsl(${250 - 210 * v}, 90%, 62%)`
+  if (mode === 'probability') return `hsl(${((350 + 170 * v) % 360).toFixed(0)}, 65%, 52%)`
+  return `hsl(${(220 - 185 * v).toFixed(0)}, 60%, 54%)`
 }
 
 /** Render whitespace so it is visible in tooltips and chips. */

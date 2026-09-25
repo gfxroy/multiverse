@@ -30,27 +30,29 @@ export function Header() {
   }
 
   return (
-    <header className="flex items-center gap-4 border-b border-white/5 bg-ink-950/60 px-5 py-3 backdrop-blur">
+    <header className="flex items-center gap-4 border-b border-white/[0.08] bg-[#000000]/80 px-6 py-3 backdrop-blur-2xl">
       <div className="flex items-center gap-3">
-        <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" className="h-8 w-8" />
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-white/[0.05]">
+          <span className="text-xs font-semibold text-white">M</span>
+        </div>
         <div>
-          <h1 className="bg-gradient-to-r from-violet-300 via-fuchsia-200 to-cyan-300 bg-clip-text text-lg leading-none font-bold tracking-tight text-transparent">
+          <h1 className="text-sm font-semibold tracking-tight text-white">
             Multiverse
           </h1>
-          <p className="mt-0.5 text-[11px] text-slate-500">what the model almost said</p>
+          <p className="text-[11px] text-neutral-400">Token-level branch explorer</p>
         </div>
       </div>
 
-      <nav className="ml-6 flex rounded-xl border border-white/10 bg-white/[0.03] p-1 text-sm">
+      <nav className="ml-6 flex rounded-xl border border-white/10 bg-white/[0.04] p-0.5 text-xs font-medium">
         {(['explore', 'compare'] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={clsx(
-              'rounded-lg px-4 py-1.5 capitalize transition',
+              'rounded-lg px-3.5 py-1.5 capitalize transition-all duration-150',
               tab === t
-                ? 'bg-gradient-to-r from-violet-500/30 to-cyan-500/20 text-white shadow-inner'
-                : 'text-slate-400 hover:text-white',
+                ? 'bg-white/15 text-white shadow-sm'
+                : 'text-neutral-400 hover:text-white',
             )}
           >
             {t}
@@ -63,7 +65,7 @@ export function Header() {
           <span
             className={clsx(
               'text-[11px] tabular-nums',
-              remaining <= 2 ? 'text-rose-300' : 'text-slate-500',
+              remaining <= 2 ? 'text-rose-300' : 'text-neutral-400',
             )}
             title="Model calls left for you in the current rate-limit window"
             data-testid="quota"
@@ -73,21 +75,14 @@ export function Header() {
         )}
         {config && (
           <span
-            className={clsx(
-              'rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-wide',
-              byok
-                ? 'bg-emerald-400/10 text-emerald-300 ring-1 ring-emerald-400/30'
-                : config.demo_mode
-                  ? 'bg-amber-400/15 text-amber-300 ring-1 ring-amber-400/40'
-                  : 'bg-emerald-400/10 text-emerald-300 ring-1 ring-emerald-400/30',
-            )}
+            className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-[11px] text-neutral-300 font-normal"
             data-testid="provider-badge"
           >
             {byok
-              ? `LIVE · ${byok.provider} (your key)`
+              ? `Live · ${byok.provider}`
               : config.demo_mode
-                ? 'DEMO · mock model'
-                : `LIVE · ${config.provider}`}
+                ? 'Demo · mock model'
+                : `Live · ${config.provider}`}
           </span>
         )}
         <KeyMenu />
@@ -107,17 +102,17 @@ export function Header() {
             }
           }}
         />
-        <button className="btn-ghost" onClick={() => fileRef.current?.click()}>
+        <button className="btn-ghost text-xs" onClick={() => fileRef.current?.click()}>
           Import
         </button>
-        <button className="btn-ghost" disabled={!tree} onClick={() => tree && downloadJson(tree)}>
-          Export JSON
+        <button className="btn-ghost text-xs" disabled={!tree} onClick={() => tree && downloadJson(tree)}>
+          Export
         </button>
-        <button className="btn-ghost" disabled={!tree} onClick={share}>
-          Share link
+        <button className="btn-ghost text-xs" disabled={!tree} onClick={share}>
+          Share
         </button>
         <a
-          className="btn-ghost"
+          className="btn-ghost text-xs"
           href="https://github.com/gfxroy/multiverse"
           target="_blank"
           rel="noreferrer"
@@ -135,7 +130,7 @@ export function DemoBanner() {
   const byok = useStore((s) => s.byok)
   if (configError) {
     return (
-      <div className="border-b border-rose-500/30 bg-rose-500/10 px-5 py-2 text-xs text-rose-200">
+      <div className="border-b border-rose-500/20 bg-rose-500/10 px-6 py-2 text-xs text-rose-200">
         {configError}. Start the backend with <code className="font-mono">make dev</code> or{' '}
         <code className="font-mono">docker compose up</code>.
       </div>
@@ -144,23 +139,23 @@ export function DemoBanner() {
   if (!config?.demo_mode || byok) return null
   return (
     <div
-      className="flex items-center gap-2 border-b border-amber-400/20 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent px-5 py-2 text-xs text-amber-200"
+      className="flex items-center gap-2 border-b border-white/[0.06] bg-white/[0.02] px-6 py-2 text-xs text-neutral-400"
       data-testid="demo-banner"
     >
-      <span className="rounded bg-amber-400/20 px-1.5 py-0.5 font-bold tracking-wider">
-        DEMO MODE
+      <span className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-neutral-300">
+        DEMO
       </span>
       <span>
-        Tokens and probabilities come from a deterministic mock model, not a real LLM. Click “Use
+        Tokens and probabilities come from a deterministic mock model. Click “Use
         your key” to run a real model with your own OpenAI key
         {STATIC ? (
-          ' (the whole app runs in your browser).'
+          ' (runs locally in your browser).'
         ) : (
           <>
             {' '}
-            (self-hosting: set{' '}
-            <code className="rounded bg-black/30 px-1 font-mono">OPENAI_API_KEY</code> in{' '}
-            <code className="rounded bg-black/30 px-1 font-mono">.env</code>).
+            (or set{' '}
+            <code className="rounded bg-white/10 px-1 font-mono text-[11px]">OPENAI_API_KEY</code> in{' '}
+            <code className="rounded bg-white/10 px-1 font-mono text-[11px]">.env</code>).
           </>
         )}
       </span>

@@ -28,14 +28,14 @@ export function PromptPanel() {
         onKeyDown={(e) => {
           if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && prompt.trim()) generate()
         }}
-        placeholder="Ask anything…"
+        placeholder="Type a prompt to begin…"
         aria-label="Prompt"
       />
       <div className="flex flex-wrap gap-1.5">
         {EXAMPLES.map((ex) => (
           <button
             key={ex}
-            className="rounded-full border border-white/10 px-2 py-0.5 text-[11px] text-slate-400 transition hover:border-violet-400/50 hover:text-slate-200"
+            className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-[11px] text-neutral-400 transition-all hover:border-white/20 hover:bg-white/[0.07] hover:text-neutral-200"
             onClick={() => setPrompt(ex)}
           >
             {ex.length > 28 ? `${ex.slice(0, 28)}…` : ex}
@@ -61,7 +61,7 @@ export function PromptPanel() {
         onChange={(max_tokens) => update({ max_tokens })}
       />
       <Slider
-        label="Top alternatives (top_logprobs)"
+        label="Top alternatives"
         value={settings.top_logprobs}
         min={1}
         max={maxTop}
@@ -78,10 +78,10 @@ export function PromptPanel() {
             <Spinner /> Generating…
           </>
         ) : (
-          <>Generate ✦</>
+          'Generate'
         )}
       </button>
-      <p className="-mt-2 text-center text-[10px] text-slate-600">Ctrl/⌘ + Enter</p>
+      <p className="-mt-2 text-center text-[10px] text-neutral-500">⌘ + Enter to run</p>
     </section>
   )
 }

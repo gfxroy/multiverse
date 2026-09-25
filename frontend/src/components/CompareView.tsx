@@ -8,7 +8,7 @@ import { ModelInput, Slider } from './ModelInput'
 import { Spinner } from './PromptPanel'
 import { TokenStrip } from './TokenStrip'
 
-const COLORS = { a: '#a78bfa', b: '#22d3ee' }
+const COLORS = { a: '#2997ff', b: '#98989d' }
 
 export function CompareView() {
   const prompt = useStore((s) => s.prompt)
@@ -58,7 +58,7 @@ export function CompareView() {
                 <Spinner /> Running…
               </>
             ) : (
-              'Compare ⇆'
+              'Compare'
             )}
           </button>
         </div>

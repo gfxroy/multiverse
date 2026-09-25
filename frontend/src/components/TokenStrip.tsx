@@ -118,11 +118,11 @@ export function TokenStrip({
             data-position={t.position}
             className={clsx(
               'token',
-              t.is_fork && 'shadow-[inset_0_-2px_0_rgba(251,191,36,0.95)]',
-              t.forced && 'ring-1 ring-cyan-300/80',
-              selected === t.position && 'ring-2 ring-violet-400',
-              divergeFrom !== null && t.position === divergeFrom && 'ring-2 ring-rose-400',
-              divergeFrom !== null && t.position > divergeFrom && 'opacity-90',
+              t.is_fork && 'underline decoration-amber-400/80 underline-offset-4 decoration-1 font-medium',
+              t.forced && 'ring-1 ring-white/60',
+              selected === t.position && 'ring-1.5 ring-white bg-white/20 text-white font-medium',
+              divergeFrom !== null && t.position === divergeFrom && 'ring-1.5 ring-rose-400',
+              divergeFrom !== null && t.position > divergeFrom && 'opacity-70',
             )}
             style={{ background: tokenColor(colorMode, t.prob, t.entropy) }}
             onMouseEnter={(e) =>

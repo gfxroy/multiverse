@@ -40,49 +40,49 @@ const BranchNode = memo(function BranchNode({ data }: NodeProps<BranchFlowNode>)
   return (
     <div
       className={clsx(
-        'w-[240px] animate-pop rounded-xl border p-2.5 text-left transition-all duration-300',
+        'w-[240px] animate-pop rounded-xl border p-3 text-left transition-all duration-200',
         active
-          ? 'border-violet-400/80 bg-gradient-to-br from-violet-500/25 to-cyan-500/10 shadow-[0_0_30px_-5px_rgba(139,92,246,0.7)]'
+          ? 'border-white/80 bg-white/[0.09] shadow-lg shadow-black/40'
           : onPath
-            ? 'border-violet-400/30 bg-ink-800/95'
-            : 'border-white/10 bg-ink-850/95 hover:border-white/25',
+            ? 'border-white/25 bg-[#161618]/95'
+            : 'border-white/[0.08] bg-[#121214]/90 hover:border-white/20',
       )}
     >
       <Handle
         type="target"
         position={Position.Left}
-        className="!h-2 !w-2 !border-0 !bg-violet-400"
+        className="!h-2 !w-2 !border-0 !bg-white/60"
       />
-      <div className="mb-1 flex items-center gap-1.5">
+      <div className="mb-1.5 flex items-center gap-1.5">
         {isRoot ? (
-          <span className="rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider text-slate-200 uppercase">
+          <span className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-medium tracking-wider text-neutral-200 uppercase">
             root
           </span>
         ) : (
           <>
-            <span className="max-w-[120px] truncate rounded-md bg-cyan-400/15 px-1.5 py-0.5 font-mono text-[11px] text-cyan-200">
+            <span className="max-w-[120px] truncate rounded bg-white/10 px-1.5 py-0.5 font-mono text-[11px] text-neutral-100">
               {visibleToken(forced!.token)}
             </span>
-            <span className="text-[10px] text-slate-500">@{node.fork_index}</span>
+            <span className="text-[10px] text-neutral-400">@{node.fork_index}</span>
             {forced!.prob !== null && (
-              <span className="text-[10px] text-slate-500">{(forced!.prob * 100).toFixed(0)}%</span>
+              <span className="text-[10px] text-neutral-400">{(forced!.prob * 100).toFixed(0)}%</span>
             )}
           </>
         )}
-        <span className="ml-auto text-[10px] text-slate-500">{node.tokens.length} tok</span>
+        <span className="ml-auto text-[10px] text-neutral-400">{node.tokens.length} tok</span>
       </div>
-      <p className="line-clamp-2 font-mono text-[11px] leading-snug text-slate-300">
-        {snippet || <span className="text-slate-600">(empty)</span>}
+      <p className="line-clamp-2 font-mono text-[11px] leading-snug text-neutral-300">
+        {snippet || <span className="text-neutral-500">(empty)</span>}
       </p>
-      <div className="mt-1.5 flex gap-2 text-[10px] text-slate-500">
+      <div className="mt-1.5 flex gap-2 text-[10px] text-neutral-400">
         <span>H̄ {meanH.toFixed(2)}</span>
-        {forks > 0 && <span className="text-amber-300/80">{forks} forks</span>}
+        {forks > 0 && <span className="text-neutral-300">{forks} forks</span>}
         {node.children.length > 0 && <span>{node.children.length} branches</span>}
       </div>
       <Handle
         type="source"
         position={Position.Right}
-        className="!h-2 !w-2 !border-0 !bg-cyan-400"
+        className="!h-2 !w-2 !border-0 !bg-white/60"
       />
     </div>
   )
@@ -129,7 +129,7 @@ function Flow() {
           target: n.id,
           type: 'smoothstep',
           animated: hot,
-          style: { stroke: hot ? '#a78bfa' : '#3b3b5c', strokeWidth: hot ? 2.5 : 1.5 },
+          style: { stroke: hot ? '#ffffff' : '#333338', strokeWidth: hot ? 2 : 1 },
         }
       })
     return { nodes, edges }
@@ -149,7 +149,7 @@ function Flow() {
       maxZoom={2}
       proOptions={{ hideAttribution: true }}
     >
-      <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#2a2a44" />
+      <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="#222226" />
       <Controls showInteractive={false} />
       <FitOnChange count={nodes.length} />
     </ReactFlow>

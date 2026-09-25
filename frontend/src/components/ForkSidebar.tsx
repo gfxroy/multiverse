@@ -35,22 +35,22 @@ export function ForkSidebar() {
   return (
     <aside className="flex min-h-0 flex-col gap-4">
       <section className="flex min-h-0 flex-1 flex-col panel" data-testid="fork-sidebar">
-        <header className="border-b border-white/5 px-4 py-3">
+        <header className="border-b border-white/[0.08] px-4 py-3">
           <div className="flex items-center justify-between">
             <h2 className="panel-title">Fork points</h2>
-            <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-[11px] font-medium text-amber-300">
+            <span className="rounded-full bg-white/[0.08] px-2 py-0.5 text-[11px] font-medium text-neutral-300">
               {forks.length}
             </span>
           </div>
-          <p className="mt-1 text-[11px] leading-snug text-slate-500">
-            Where the model was torn: entropy ≥ {forkSettings.entropy_threshold.toFixed(1)} bits or
+          <p className="mt-1 text-[11px] leading-snug text-neutral-400">
+            Points of model uncertainty: entropy ≥ {forkSettings.entropy_threshold.toFixed(1)} b or
             top-2 margin ≤ {pct(forkSettings.margin_threshold, 0)}.
           </p>
         </header>
         <ul className="min-h-0 flex-1 space-y-1 overflow-y-auto p-2">
           {forks.length === 0 && (
-            <li className="p-4 text-center text-xs text-slate-600">
-              {tree ? 'No fork points on this branch. The model was confident.' : 'Nothing yet.'}
+            <li className="p-4 text-center text-xs text-neutral-500">
+              {tree ? 'No fork points on this branch.' : 'No branches yet.'}
             </li>
           )}
           {forks.map(({ position, token }) => {
@@ -63,31 +63,31 @@ export function ForkSidebar() {
                     e.stopPropagation()
                     setFocus(position)
                   }}
-                  className="group w-full rounded-lg border border-transparent px-2.5 py-2 text-left transition hover:border-amber-400/30 hover:bg-amber-400/[0.06]"
+                  className="group w-full rounded-xl border border-transparent px-3 py-2 text-left transition-all hover:border-white/10 hover:bg-white/[0.04]"
                 >
-                  <div className="flex items-center gap-2 text-[10px] text-slate-500">
+                  <div className="flex items-center gap-2 text-[10px] text-neutral-400">
                     <span>#{position}</span>
-                    <span className="h-1 flex-1 overflow-hidden rounded-full bg-white/5">
+                    <span className="h-1 flex-1 overflow-hidden rounded-full bg-white/10">
                       <span
-                        className="block h-full rounded-full bg-gradient-to-r from-amber-500 to-rose-500"
+                        className="block h-full rounded-full bg-white/60"
                         style={{ width: `${Math.round(token.fork_score * 100)}%` }}
                       />
                     </span>
                     <span className="font-mono">{token.entropy.toFixed(2)}b</span>
                   </div>
                   <div className="mt-1 flex items-baseline gap-1.5 font-mono text-xs">
-                    <span className="truncate text-slate-100">
+                    <span className="truncate text-neutral-100">
                       {visibleToken(first?.token ?? '')}
                     </span>
-                    <span className="text-slate-500">{pct(first?.prob, 0)}</span>
-                    <span className="text-slate-600">vs</span>
-                    <span className="truncate text-slate-300">
+                    <span className="text-neutral-400">{pct(first?.prob, 0)}</span>
+                    <span className="text-neutral-500">vs</span>
+                    <span className="truncate text-neutral-300">
                       {visibleToken(second?.token ?? '')}
                     </span>
-                    <span className="text-slate-500">{pct(second?.prob, 0)}</span>
+                    <span className="text-neutral-400">{pct(second?.prob, 0)}</span>
                     {explored > 0 && (
                       <span
-                        className="ml-auto flex items-center gap-0.5 text-cyan-300"
+                        className="ml-auto flex items-center gap-1 text-neutral-300"
                         title={`${explored} explored`}
                       >
                         <BranchIcon className="h-3 w-3" />
@@ -104,16 +104,15 @@ export function ForkSidebar() {
 
       <section className="space-y-3 panel p-4">
         <h2 className="panel-title">Auto-explore</h2>
-        <p className="text-[11px] leading-snug text-slate-500">
-          Branch the top-k fork points of the current branch with their best unexplored alternative,
-          then repeat on the new branches.
+        <p className="text-[11px] leading-snug text-neutral-400">
+          Branch top fork points with their best unexplored alternative.
         </p>
         <div className="grid grid-cols-2 gap-3">
           <Slider label="top-k" value={topK} min={1} max={4} step={1} onChange={setTopK} />
           <Slider label="depth" value={depth} min={1} max={3} step={1} onChange={setDepth} />
         </div>
         <button
-          className="btn-ghost w-full border-amber-400/30 text-amber-200 hover:border-amber-400/60"
+          className="btn-ghost w-full"
           disabled={!tree || busy !== null}
           onClick={() => explore(topK, depth)}
         >
@@ -127,8 +126,8 @@ export function ForkSidebar() {
             </>
           )}
         </button>
-        <p className="text-center text-[10px] text-slate-600">
-          up to {maxCalls} model calls (max {cap} per run)
+        <p className="text-center text-[10px] text-neutral-500">
+          up to {maxCalls} calls (max {cap} per run)
         </p>
         <details className="text-xs text-slate-400">
           <summary className="cursor-pointer text-[11px] text-slate-500 select-none hover:text-slate-300">
