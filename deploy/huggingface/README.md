@@ -17,6 +17,6 @@ it to branch, and explore fork points where the model was uncertain.
 
 Source code: <https://github.com/gfxroy/multiverse>
 
-This demo runs on Gemini (`gemini-2.5-flash`) using the Space owner's key, with per-visitor
-and daily rate limits. Click **Use your key** to try it with your own OpenAI or Gemini key.
+This demo uses the Space owner's server-side key (or demo mode when none is set), with
+per-visitor and daily rate limits. Click **Use your key** to try it with your own OpenAI or Gemini key.
 Your key stays in your browser tab and is only sent along with your own requests.

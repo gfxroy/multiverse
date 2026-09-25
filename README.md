@@ -124,8 +124,8 @@ them:
 |---|---|---|
 | OpenAI Chat Completions (`gpt-4o-mini`, `gpt-4.1-*`, `gpt-4o`) | ✅ up to 20 alternatives | `OPENAI_API_KEY=...` |
 | OpenAI reasoning models (o-series etc.) | ❌ rejected by the API | use a non-reasoning chat model |
-| **Gemini, native API** (`gemini-2.5-flash`, `gemini-2.5-flash-lite`, `gemini-2.0-flash`) | ✅ documented as `responseLogprobs` + `logprobs` (1–20) | `GEMINI_API_KEY=...` (built-in `GeminiProvider`) |
-| Gemini 3.x models | ❌ Google no longer returns logprobs for 3.x | use a 2.x model |
+| **Gemini, native API**, 2.x models (`gemini-2.5-flash`, `gemini-2.5-flash-lite`) | ⚠️ documented as `responseLogprobs` + `logprobs` (1–20), but only for keys that still have 2.x access | `GEMINI_API_KEY=...` (built-in `GeminiProvider`) |
+| Gemini 3.x, `gemini-*-latest` aliases, Gemma 4 | ❌ `400 Logprobs is not enabled for this model` | none right now |
 | Gemini's OpenAI-compatible endpoint (`…/v1beta/openai/`) | ❌ `logprobs` isn't supported there | use the native provider above |
 | Self-hosted OpenAI-compatible servers (e.g. vLLM) | ✅ usually (check your server) | `OPENAI_API_KEY=anything`, `OPENAI_BASE_URL=http://host:port/v1` |
 
@@ -139,7 +139,12 @@ For Gemini, the native provider calls `models/{model}:generateContent` with
 to visible tokens, and retries 429/5xx responses with backoff. It is tested against Google's
 documented response schema, including a fake Gemini HTTP server
 ([`backend/tests/fake_gemini.py`](backend/tests/fake_gemini.py)) used for end-to-end runs.
-It has not yet been verified against the live Gemini API in this repo.
+**Live check (September 2026):** with a newly created AI Studio key, the 2.x models return
+`404 … no longer available to new users`, and every 3.x, `-latest` and Gemma model the key
+can use returns `400 Logprobs is not enabled for this model` (the OpenAI-compatible endpoint
+rejects the `logprobs` field outright). So Gemini works here only if your key still has
+access to a 2.x model. Otherwise use OpenAI or a self-hosted OpenAI-compatible server. If a
+model refuses logprobs, the UI shows Google's error with an explanation.
 
 Visitors can click **Use your key** in the header to use their own OpenAI or Gemini key. The
 key stays in that browser tab (`sessionStorage`) and is sent as a header with each request.

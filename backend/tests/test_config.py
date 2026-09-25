@@ -2,7 +2,7 @@ from app.config import Settings
 
 
 def test_auto_provider_falls_back_to_mock_without_key() -> None:
-    s = Settings(_env_file=None, OPENAI_API_KEY="")  # type: ignore[call-arg]
+    s = Settings(_env_file=None, OPENAI_API_KEY="", GEMINI_API_KEY="")  # type: ignore[call-arg]
     assert s.resolved_provider == "mock" and s.demo_mode
 
 

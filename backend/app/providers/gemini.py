@@ -154,4 +154,10 @@ def _error_message(response: httpx.Response) -> str:
         message = ""
     if response.status_code == 429:
         return "Gemini rate limit or quota exceeded. Wait a minute and try again."
-    return f"Gemini error {response.status_code}: {message or response.reason_phrase}"
+    text = f"Gemini error {response.status_code}: {message or response.reason_phrase}"
+    if "logprobs is not enabled" in message.lower():
+        text += (
+            " (this model or API key can't return logprobs, which Multiverse needs; "
+            "try a Gemini 2.x model, or an OpenAI model)"
+        )
+    return text

@@ -161,3 +161,15 @@ async def test_end_to_end_against_fake_gemini_server() -> None:
     )
     created, _ = await T.explore(tree, tree.root_id, provider, top_k=2, depth=1)
     assert created and all(tree.nodes[c].method == "chat-continuation" for c in created)
+
+
+def test_logprobs_not_enabled_error_gets_a_hint() -> None:
+    from app.providers.gemini import _error_message
+
+    response = httpx.Response(
+        400,
+        json={"error": {"code": 400, "message": "Logprobs is not enabled for this model"}},
+    )
+    message = _error_message(response)
+    assert message.startswith("Gemini error 400: Logprobs is not enabled")
+    assert "Multiverse needs" in message
