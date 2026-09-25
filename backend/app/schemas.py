@@ -123,6 +123,7 @@ class ExploreResponse(BaseModel):
     tree: Tree
     created: list[str]
     truncated: bool = False
+    rate_limited: bool = Field(default=False, description="Stopped early by the rate limit.")
 
 
 class CompareSide(BaseModel):
@@ -158,10 +159,25 @@ class CompareResponse(BaseModel):
     metrics: DivergenceMetrics
 
 
+class LimitsInfo(BaseModel):
+    rate_limit_calls: int = Field(description="Per visitor per window; 0 = unlimited.")
+    rate_limit_window_seconds: float
+    daily_call_cap: int = Field(description="Global per UTC day; 0 = unlimited.")
+    max_top_logprobs: int
+    max_explore_nodes: int
+    max_prompt_chars: int
+    remaining: int | None = Field(description="Calls this visitor may still make now.")
+
+
 class ModelsInfo(BaseModel):
     provider: str
     demo_mode: bool
     default_model: str
     models: list[str]
+    provider_models: dict[str, list[str]] = Field(
+        default_factory=dict, description="Suggested models per provider (for own-key use)."
+    )
+    allow_byok: bool = True
     max_tokens_limit: int
+    limits: LimitsInfo | None = None
     version: str

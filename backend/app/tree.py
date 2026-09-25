@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import uuid
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
 from .entropy import annotate_token
@@ -213,11 +213,13 @@ async def explore(
     top_k: int = 2,
     depth: int = 1,
     max_nodes: int = 24,
+    grant: Callable[[int], int] | None = None,
 ) -> tuple[list[str], bool]:
     """Breadth-first auto-exploration. Returns ``(created_ids, truncated)``.
 
     Each level's provider calls run concurrently; results are attached in a deterministic
-    order so the tree shape does not depend on network timing.
+    order so the tree shape does not depend on network timing. ``grant(n)`` (e.g. a rate
+    limiter) may allow fewer than ``n`` calls, which truncates the exploration.
     """
     created: list[str] = []
     frontier = [node_id]
@@ -231,6 +233,12 @@ async def explore(
             plans, truncated = plans[: max(budget, 0)], True
         if not plans:
             break
+        if grant is not None:
+            allowed = grant(len(plans))
+            if allowed < len(plans):
+                plans, truncated = plans[:allowed], True
+            if not plans:
+                break
         results = await asyncio.gather(
             *(provider.complete(tree.prompt, tree.settings, p.prefix) for p in plans)
         )
