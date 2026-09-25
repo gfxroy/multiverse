@@ -86,11 +86,24 @@ export interface CompareResponse {
   metrics: DivergenceMetrics
 }
 
+export interface LimitsInfo {
+  rate_limit_calls: number
+  rate_limit_window_seconds: number
+  daily_call_cap: number
+  max_top_logprobs: number
+  max_explore_nodes: number
+  max_prompt_chars: number
+  remaining: number | null
+}
+
 export interface ModelsInfo {
   provider: string
   demo_mode: boolean
   default_model: string
   models: string[]
+  provider_models: Record<string, string[]>
+  allow_byok: boolean
   max_tokens_limit: number
+  limits: LimitsInfo | null
   version: string
 }

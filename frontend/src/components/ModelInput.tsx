@@ -14,7 +14,11 @@ export function ModelInput({
   onChange: (model: string) => void
   label?: string
 }) {
-  const models = useStore((s) => s.config?.models ?? NO_MODELS)
+  const models = useStore((s) =>
+    s.byok
+      ? (s.config?.provider_models[s.byok.provider] ?? NO_MODELS)
+      : (s.config?.models ?? NO_MODELS),
+  )
   const listId = useId()
   return (
     <label className="block">

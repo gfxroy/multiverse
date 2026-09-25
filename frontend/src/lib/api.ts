@@ -1,3 +1,4 @@
+import { byokHeaders } from './byok'
 import type {
   CompareResponse,
   CompareSide,
@@ -17,12 +18,24 @@ export class ApiError extends Error {
   }
 }
 
+type RemainingListener = (remaining: number) => void
+let onRemaining: RemainingListener | null = null
+
+/** Subscribe to the server's per-visitor quota (X-RateLimit-Remaining). */
+export function setRemainingListener(fn: RemainingListener | null): void {
+  onRemaining = fn
+}
+
 async function request<T>(path: string, body?: unknown): Promise<T> {
+  const headers: Record<string, string> = { ...byokHeaders() }
+  if (body !== undefined) headers['Content-Type'] = 'application/json'
   const res = await fetch(`${BASE}${path}`, {
     method: body === undefined ? 'GET' : 'POST',
-    headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
+    headers,
     body: body === undefined ? undefined : JSON.stringify(body),
   })
+  const remaining = res.headers.get('X-RateLimit-Remaining')
+  if (remaining !== null && onRemaining) onRemaining(Number(remaining))
   if (!res.ok) {
     let detail = res.statusText
     try {
@@ -48,12 +61,15 @@ export const api = {
       token,
     }),
   explore: (tree: Tree, node_id: string, top_k: number, depth: number) =>
-    request<{ tree: Tree; created: string[]; truncated: boolean }>('/api/explore', {
-      tree,
-      node_id,
-      top_k,
-      depth,
-    }),
+    request<{ tree: Tree; created: string[]; truncated: boolean; rate_limited: boolean }>(
+      '/api/explore',
+      {
+        tree,
+        node_id,
+        top_k,
+        depth,
+      },
+    ),
   compare: (
     prompt: string,
     a: CompareSide,

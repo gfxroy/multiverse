@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 
-import { api } from './lib/api'
+import { api, setRemainingListener } from './lib/api'
+import { getByok, setByok as persistByok, type Byok } from './lib/byok'
 import type { ColorMode } from './lib/color'
 import { remarkTree } from './lib/forks'
 import { firstLeaf } from './lib/tree'
@@ -38,7 +39,11 @@ interface State {
   compareA: CompareSide
   compareB: CompareSide
   compareResult: CompareResponse | null
+  /** Calls left for this visitor under the server's rate limit (null = unlimited). */
+  remaining: number | null
+  byok: Byok | null
 
+  setByok: (value: Byok | null) => void
   loadConfig: () => Promise<void>
   setTab: (tab: Tab) => void
   setPrompt: (prompt: string) => void
@@ -80,16 +85,43 @@ export const useStore = create<State>((set, get) => ({
   compareA: { model: 'gpt-4o-mini', temperature: 0 },
   compareB: { model: 'gpt-4o-mini', temperature: 1.2 },
   compareResult: null,
+  remaining: null,
+  byok: getByok(),
+
+  setByok: (value) => {
+    persistByok(value)
+    const byok = getByok()
+    const { config, settings, compareA, compareB } = get()
+    // Switch to a sensible model for the provider whose key is now in use.
+    const models = byok ? config?.provider_models[byok.provider] : config?.models
+    const fallback = models?.[0]
+    const fix = (m: string) => (fallback && models && !models.includes(m) ? fallback : m)
+    set({
+      byok,
+      settings: { ...settings, model: fix(settings.model) },
+      compareA: { ...compareA, model: fix(compareA.model) },
+      compareB: { ...compareB, model: fix(compareB.model) },
+    })
+    get().showToast(byok ? `Using your ${byok.provider} key (this tab only)` : 'Own key removed')
+    get().loadConfig()
+  },
 
   loadConfig: async () => {
     try {
       const config = await api.config()
+      const byok = get().byok
+      const model = byok ? config.provider_models[byok.provider]?.[0] : config.default_model
       set((s) => ({
         config,
         configError: null,
-        settings: { ...s.settings, model: config.default_model },
-        compareA: { ...s.compareA, model: config.default_model },
-        compareB: { ...s.compareB, model: config.default_model },
+        remaining: config.limits?.remaining ?? null,
+        settings: {
+          ...s.settings,
+          model: model ?? s.settings.model,
+          top_logprobs: Math.min(s.settings.top_logprobs, config.limits?.max_top_logprobs ?? 20),
+        },
+        compareA: { ...s.compareA, model: model ?? s.compareA.model },
+        compareB: { ...s.compareB, model: model ?? s.compareB.model },
       }))
     } catch (e) {
       set({ configError: `Backend unreachable: ${errorMessage(e)}` })
@@ -148,7 +180,13 @@ export const useStore = create<State>((set, get) => ({
       get().showToast(
         n === 0
           ? 'No unexplored fork points on this branch'
-          : `Explored ${n} new branch${n === 1 ? '' : 'es'}${res.truncated ? ' (node budget reached)' : ''}`,
+          : `Explored ${n} new branch${n === 1 ? '' : 'es'}${
+              res.rate_limited
+                ? ' (stopped early: rate limit)'
+                : res.truncated
+                  ? ' (node budget reached)'
+                  : ''
+            }`,
       )
     } catch (e) {
       set({ error: errorMessage(e) })
@@ -204,3 +242,5 @@ export const useStore = create<State>((set, get) => ({
   },
   clearError: () => set({ error: null }),
 }))
+
+setRemainingListener((remaining) => useStore.setState({ remaining }))

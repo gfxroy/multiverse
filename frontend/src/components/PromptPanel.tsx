@@ -16,6 +16,7 @@ export function PromptPanel() {
   const generate = useStore((s) => s.generate)
   const busy = useStore((s) => s.busy)
   const limit = useStore((s) => s.config?.max_tokens_limit ?? 512)
+  const maxTop = useStore((s) => s.config?.limits?.max_top_logprobs ?? 20)
 
   return (
     <section className="flex flex-col gap-4 panel p-4">
@@ -63,7 +64,7 @@ export function PromptPanel() {
         label="Top alternatives (top_logprobs)"
         value={settings.top_logprobs}
         min={1}
-        max={20}
+        max={maxTop}
         step={1}
         onChange={(top_logprobs) => update({ top_logprobs })}
       />

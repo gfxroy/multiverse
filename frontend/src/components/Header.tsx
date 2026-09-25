@@ -3,6 +3,7 @@ import { useRef } from 'react'
 
 import { downloadJson, permalink, readTreeFile } from '../lib/share'
 import { useStore, type Tab } from '../store'
+import { KeyMenu } from './KeyMenu'
 
 export function Header() {
   const tab = useStore((s) => s.tab)
@@ -11,6 +12,8 @@ export function Header() {
   const config = useStore((s) => s.config)
   const loadTree = useStore((s) => s.loadTree)
   const showToast = useStore((s) => s.showToast)
+  const byok = useStore((s) => s.byok)
+  const remaining = useStore((s) => s.remaining)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const share = async () => {
@@ -55,19 +58,38 @@ export function Header() {
       </nav>
 
       <div className="ml-auto flex items-center gap-2">
+        {remaining !== null && !byok && (
+          <span
+            className={clsx(
+              'text-[11px] tabular-nums',
+              remaining <= 2 ? 'text-rose-300' : 'text-slate-500',
+            )}
+            title="Model calls left for you in the current rate-limit window"
+            data-testid="quota"
+          >
+            {remaining} calls left
+          </span>
+        )}
         {config && (
           <span
             className={clsx(
               'rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-wide',
-              config.demo_mode
-                ? 'bg-amber-400/15 text-amber-300 ring-1 ring-amber-400/40'
-                : 'bg-emerald-400/10 text-emerald-300 ring-1 ring-emerald-400/30',
+              byok
+                ? 'bg-emerald-400/10 text-emerald-300 ring-1 ring-emerald-400/30'
+                : config.demo_mode
+                  ? 'bg-amber-400/15 text-amber-300 ring-1 ring-amber-400/40'
+                  : 'bg-emerald-400/10 text-emerald-300 ring-1 ring-emerald-400/30',
             )}
             data-testid="provider-badge"
           >
-            {config.demo_mode ? 'DEMO · mock model' : `LIVE · ${config.provider}`}
+            {byok
+              ? `LIVE · ${byok.provider} (your key)`
+              : config.demo_mode
+                ? 'DEMO · mock model'
+                : `LIVE · ${config.provider}`}
           </span>
         )}
+        <KeyMenu />
         <input
           ref={fileRef}
           type="file"
@@ -109,6 +131,7 @@ export function Header() {
 export function DemoBanner() {
   const config = useStore((s) => s.config)
   const configError = useStore((s) => s.configError)
+  const byok = useStore((s) => s.byok)
   if (configError) {
     return (
       <div className="border-b border-rose-500/30 bg-rose-500/10 px-5 py-2 text-xs text-rose-200">
@@ -117,7 +140,7 @@ export function DemoBanner() {
       </div>
     )
   }
-  if (!config?.demo_mode) return null
+  if (!config?.demo_mode || byok) return null
   return (
     <div
       className="flex items-center gap-2 border-b border-amber-400/20 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent px-5 py-2 text-xs text-amber-200"
@@ -127,10 +150,10 @@ export function DemoBanner() {
         DEMO MODE
       </span>
       <span>
-        Tokens and probabilities come from a deterministic mock model, not OpenAI. Set{' '}
-        <code className="rounded bg-black/30 px-1 font-mono">OPENAI_API_KEY</code> in{' '}
-        <code className="rounded bg-black/30 px-1 font-mono">.env</code> and restart to use real
-        models.
+        Tokens and probabilities come from a deterministic mock model, not a real LLM. Set{' '}
+        <code className="rounded bg-black/30 px-1 font-mono">OPENAI_API_KEY</code> or{' '}
+        <code className="rounded bg-black/30 px-1 font-mono">GEMINI_API_KEY</code> in{' '}
+        <code className="rounded bg-black/30 px-1 font-mono">.env</code>, or click “Use your key”.
       </span>
     </div>
   )
