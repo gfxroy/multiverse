@@ -1,0 +1,25 @@
+# One-command start:  docker compose up --build   ->  http://localhost:8080
+# Without a .env file (or with an empty OPENAI_API_KEY) the app runs in demo mode.
+services:
+  backend:
+    build: ./backend
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MULTIVERSE_CORS_ORIGINS: '["http://localhost:8080"]'
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
