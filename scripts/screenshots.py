@@ -49,7 +49,9 @@ def capture(url: str, out: Path) -> None:
         generate(page)
 
         # 1. Hover a fork token to show the alternatives tooltip.
-        fork_pos = page.locator("[data-testid=fork-sidebar] li button").nth(1).inner_text()
+        fork_pos = (
+            page.locator("[data-testid=fork-sidebar] li button").nth(1).inner_text()
+        )
         pos = fork_pos.split()[0].lstrip("#")
         page.locator(f"[data-testid=token][data-position='{pos}']").hover()
         page.wait_for_timeout(500)
@@ -72,7 +74,9 @@ def capture(url: str, out: Path) -> None:
         # 4. Entropy colouring.
         page.get_by_role("button", name="entropy", exact=True).click()
         page.wait_for_timeout(400)
-        page.locator("[data-testid=token-view]").screenshot(path=out / "entropy-view.png")
+        page.locator("[data-testid=token-view]").screenshot(
+            path=out / "entropy-view.png"
+        )
         page.get_by_role("button", name="probability", exact=True).click()
 
         # 5. Compare mode.
@@ -118,13 +122,31 @@ def record_gif(url: str, out: Path) -> None:
         palette = Path(tmp) / "palette.png"
         vf = "fps=8,scale=1000:-1:flags=lanczos"
         subprocess.run(
-            ["ffmpeg", "-y", "-loglevel", "error", "-i", src, "-vf", f"{vf},palettegen=max_colors=128:stats_mode=diff", palette],
+            [
+                "ffmpeg",
+                "-y",
+                "-loglevel",
+                "error",
+                "-i",
+                src,
+                "-vf",
+                f"{vf},palettegen=max_colors=128:stats_mode=diff",
+                palette,
+            ],
             check=True,
         )
         subprocess.run(
             [
-                "ffmpeg", "-y", "-loglevel", "error", "-i", src, "-i", palette,
-                "-lavfi", f"{vf}[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle",
+                "ffmpeg",
+                "-y",
+                "-loglevel",
+                "error",
+                "-i",
+                src,
+                "-i",
+                palette,
+                "-lavfi",
+                f"{vf}[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle",
                 out / "demo.gif",
             ],
             check=True,
