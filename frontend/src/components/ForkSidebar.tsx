@@ -26,9 +26,10 @@ export function ForkSidebar() {
     () => (tree && activeId ? branchedTokens(tree, activeId) : new Map<number, Set<string>>()),
     [tree, activeId],
   )
-  const maxCalls = Array.from({ length: depth }, (_, i) => topK ** (i + 1)).reduce(
-    (a, b) => a + b,
-    0,
+  const cap = useStore((s) => s.config?.limits?.max_explore_nodes ?? 24)
+  const maxCalls = Math.min(
+    cap,
+    Array.from({ length: depth }, (_, i) => topK ** (i + 1)).reduce((a, b) => a + b, 0),
   )
 
   return (
@@ -127,7 +128,7 @@ export function ForkSidebar() {
           )}
         </button>
         <p className="text-center text-[10px] text-slate-600">
-          up to {maxCalls} model calls (server caps nodes per run)
+          up to {maxCalls} model calls (max {cap} per run)
         </p>
         <details className="text-xs text-slate-400">
           <summary className="cursor-pointer text-[11px] text-slate-500 select-none hover:text-slate-300">

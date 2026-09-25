@@ -11,3 +11,4 @@
 .git
 docs
 scripts
+**/dist-pages

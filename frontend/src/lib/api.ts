@@ -1,3 +1,4 @@
+import { localApi } from '../engine/local'
 import { byokHeaders } from './byok'
 import type {
   CompareResponse,
@@ -9,6 +10,9 @@ import type {
 } from './types'
 
 const BASE = import.meta.env.VITE_API_BASE ?? ''
+
+/** Static build (GitHub Pages): everything runs in the browser, no backend. */
+export const STATIC = import.meta.env.VITE_STATIC === '1'
 
 export class ApiError extends Error {
   readonly status: number
@@ -49,7 +53,7 @@ async function request<T>(path: string, body?: unknown): Promise<T> {
   return (await res.json()) as T
 }
 
-export const api = {
+const serverApi = {
   config: () => request<ModelsInfo>('/api/config'),
   generate: (prompt: string, settings: GenerationSettings, fork_settings: ForkSettings) =>
     request<Tree>('/api/generate', { prompt, settings, fork_settings }),
@@ -87,3 +91,5 @@ export const api = {
       fork_settings,
     }),
 }
+
+export const api: typeof serverApi = STATIC ? localApi : serverApi

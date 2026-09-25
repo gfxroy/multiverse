@@ -6,6 +6,8 @@ import { defineConfig } from 'vite'
 const apiTarget = process.env.VITE_API_PROXY ?? 'http://localhost:8000'
 
 export default defineConfig({
+  // '/multiverse/' for the GitHub Pages build (served from a sub-path).
+  base: process.env.VITE_BASE ?? '/',
   plugins: [react(), tailwindcss()],
   server: {
     port: 5173,

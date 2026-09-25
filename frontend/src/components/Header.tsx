@@ -1,6 +1,7 @@
 import clsx from 'clsx'
 import { useRef } from 'react'
 
+import { STATIC } from '../lib/api'
 import { downloadJson, permalink, readTreeFile } from '../lib/share'
 import { useStore, type Tab } from '../store'
 import { KeyMenu } from './KeyMenu'
@@ -31,7 +32,7 @@ export function Header() {
   return (
     <header className="flex items-center gap-4 border-b border-white/5 bg-ink-950/60 px-5 py-3 backdrop-blur">
       <div className="flex items-center gap-3">
-        <img src="/favicon.svg" alt="" className="h-8 w-8" />
+        <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" className="h-8 w-8" />
         <div>
           <h1 className="bg-gradient-to-r from-violet-300 via-fuchsia-200 to-cyan-300 bg-clip-text text-lg leading-none font-bold tracking-tight text-transparent">
             Multiverse
@@ -151,9 +152,17 @@ export function DemoBanner() {
       </span>
       <span>
         Tokens and probabilities come from a deterministic mock model, not a real LLM. Click “Use
-        your key” to run a real model with your own OpenAI key (self-hosting: set{' '}
-        <code className="rounded bg-black/30 px-1 font-mono">OPENAI_API_KEY</code> in{' '}
-        <code className="rounded bg-black/30 px-1 font-mono">.env</code>).
+        your key” to run a real model with your own OpenAI key
+        {STATIC ? (
+          ' (the whole app runs in your browser).'
+        ) : (
+          <>
+            {' '}
+            (self-hosting: set{' '}
+            <code className="rounded bg-black/30 px-1 font-mono">OPENAI_API_KEY</code> in{' '}
+            <code className="rounded bg-black/30 px-1 font-mono">.env</code>).
+          </>
+        )}
       </span>
     </div>
   )

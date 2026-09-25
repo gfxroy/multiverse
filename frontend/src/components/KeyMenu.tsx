@@ -1,6 +1,7 @@
 import clsx from 'clsx'
 import { useEffect, useRef, useState } from 'react'
 
+import { STATIC } from '../lib/api'
 import { maskKey, type ByokProvider } from '../lib/byok'
 import { useStore } from '../store'
 
@@ -41,9 +42,9 @@ export function KeyMenu() {
         <div className="absolute top-full right-0 z-50 mt-2 w-80 animate-fade-in rounded-xl border border-white/10 bg-ink-850/95 p-4 text-xs shadow-2xl backdrop-blur-xl">
           <h3 className="mb-1 text-sm font-semibold text-white">Use your own API key</h3>
           <p className="mb-3 leading-snug text-slate-400">
-            Your key stays in this browser tab (sessionStorage) and is sent with each request over
-            HTTPS. The server uses it for that request only and never stores or logs it. Requests
-            with your own key skip the shared demo quota.
+            {STATIC
+              ? 'Your key stays in this browser tab (sessionStorage) and is sent only to api.openai.com, directly from your browser. There is no server in between. Calls use your OpenAI credits.'
+              : 'Your key stays in this browser tab (sessionStorage) and is sent with each request over HTTPS. The server uses it for that request only and never stores or logs it. Requests with your own key skip the shared demo quota.'}
           </p>
           {byok ? (
             <div className="space-y-3">

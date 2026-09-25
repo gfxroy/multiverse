@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:pages": "tsc -b && VITE_STATIC=1 VITE_BASE=/multiverse/ vite build --outDir dist-pages",
     "preview": "vite preview",
     "lint": "oxlint src",
     "typecheck": "tsc -b",

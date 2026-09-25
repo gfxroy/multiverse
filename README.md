@@ -10,7 +10,12 @@ Multiverse shows an LLM completion one token at a time, with the probability of 
 and the alternatives the model considered. Click any token to force a different choice,
 and the story branches into a tree of alternate futures you can zoom around.
 
+### [▶ Live demo: gfxroy.github.io/multiverse](https://gfxroy.github.io/multiverse/)
+
+<sub>Runs entirely in your browser: a deterministic mock model by default, or real OpenAI models with your own key (sent only to api.openai.com).</sub>
+
 [![CI](https://github.com/gfxroy/multiverse/actions/workflows/ci.yml/badge.svg)](https://github.com/gfxroy/multiverse/actions/workflows/ci.yml)
+[![Pages](https://github.com/gfxroy/multiverse/actions/workflows/pages.yml/badge.svg)](https://gfxroy.github.io/multiverse/)
 ![Python](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-async-009688?logo=fastapi&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
@@ -152,8 +157,39 @@ The server uses it only for that request, never stores or logs it, and always se
 keys to the provider's official endpoint (a custom base URL applies only to the server's
 own key).
 
-### Hosting a public demo (Hugging Face Spaces)
+### Static build (GitHub Pages)
 
+The [live demo](https://gfxroy.github.io/multiverse/) is a static build with no backend. The
+mock model, entropy and fork-point detection, branching, auto-explore and compare metrics
+are ported to TypeScript ([`frontend/src/engine/`](frontend/src/engine/)). A small local
+API ([`engine/local.ts`](frontend/src/engine/local.ts)) has the same shape as the HTTP
+client, so the UI is unchanged. The TypeScript tests mirror the backend's tests for these
+modules.
+
+- **Demo mode:** the same corpus and n-gram approach as the Python mock. The hash and RNG
+  differ, so the exact text differs from the server's demo mode, but the behaviour matches
+  (deterministic, topic-aware, branchable).
+- **Your own OpenAI key:** the browser calls `https://api.openai.com/v1/chat/completions`
+  directly with `logprobs`/`top_logprobs`, using the same continuation prompt as the
+  backend. The key stays in `sessionStorage` for that tab and goes nowhere else. The
+  browser caps `max_tokens` at 200 and auto-explore at 10 branches per run. Gemini isn't
+  offered there.
+- **Share links** keep the tree in the URL hash (`#t=…`), which works on static hosting.
+
+```bash
+cd frontend && npm run build:pages   # VITE_STATIC=1, base /multiverse/ → dist-pages/
+```
+
+[`.github/workflows/pages.yml`](.github/workflows/pages.yml) runs the tests, builds, and
+deploys to GitHub Pages on every push to `main`.
+[`scripts/verify_pages.py`](scripts/verify_pages.py) is a headless Playwright check of a
+deployed build: load, demo banner, generate, hover, branch, auto-explore, share link,
+compare and the key menu.
+
+### Hosting the server version (single container)
+
+The FastAPI server version is still the full-featured one: server-side keys, OpenAI-compatible
+endpoints, the native Gemini provider, rate limits and caching.
 [`Dockerfile.space`](Dockerfile.space) builds the frontend and serves it from FastAPI in a
 single container on port 7860, with conservative public-demo defaults baked in:
 
@@ -170,9 +206,11 @@ docker build -f Dockerfile.space -t multiverse-space .
 docker run -p 7860:7860 -e GEMINI_API_KEY=... multiverse-space   # → http://localhost:7860
 ```
 
-The Space front-matter and step-by-step deploy notes are in
-[`deploy/huggingface/`](deploy/huggingface/). The key goes in a Space **secret**, never in
-the repo. Rate-limit state is in memory, which fits a single container.
+The image runs on any Docker host. For Hugging Face Spaces, the front-matter and deploy
+notes are in [`deploy/huggingface/`](deploy/huggingface/). Docker Spaces need a paid plan
+there (free cpu-basic is limited to static Spaces as of September 2026). Keys belong in the
+host's secret store, never in the repo. Rate-limit state is in memory, which fits a single
+container.
 
 ## Architecture
 
@@ -281,6 +319,9 @@ personality" noise. It is:
 It's there to show the interface, not to produce good prose. The text is plausible-looking
 but often nonsensical.
 
+The static build ([live demo](https://gfxroy.github.io/multiverse/)) runs a TypeScript
+port of the same model in the browser ([`engine/mock.ts`](frontend/src/engine/mock.ts)).
+
 ## Configuration
 
 All settings are environment variables (see [`.env.example`](.env.example)):
@@ -325,7 +366,10 @@ make lint    # ruff, ruff format, mypy --strict · oxlint, prettier, tsc
   requests, server-side caps, static SPA serving, compare metrics and every API route.
 - **Frontend (vitest + Testing Library):** path reconstruction, tree layout, fork scoring
   (mirrors the backend), permalink round-trips, colour scales, own-key storage/headers,
-  429 handling and the branch menu component.
+  429 handling and the branch menu component. The in-browser engine has its own tests that
+  mirror the backend's: entropy, mock model, branching, auto-explore budgets, compare, the
+  browser OpenAI client (request shape, key sent only to api.openai.com, error handling)
+  and the static local API.
 - **CI** (GitHub Actions): lint, type-check, tests, production build, a Docker Compose
   build with an end-to-end smoke request in demo mode, the single-container Space image
   built and smoke-tested on port 7860, and a gitleaks secret scan.
@@ -349,10 +393,13 @@ frontend/
   src/
     components/        TokenView, TokenStrip, TokenInspector, TreeView, ForkSidebar, CompareView…
     lib/               API client, tree utils, fork math, share links, colour scales
+    engine/            in-browser port for the static build: mock model, branching, explore,
+                       compare, browser OpenAI client, local API
     store.ts           zustand state
 docs/                  screenshots, GIF, branching write-up
 deploy/huggingface/    Space README front-matter + deploy notes
-scripts/               dev runner, Playwright screenshot capture
+scripts/               dev runner, Playwright screenshot capture, Pages verification
+.github/workflows/     CI (lint, tests, builds, Docker smoke tests, gitleaks) + Pages deploy
 Dockerfile.space       single-container image (FastAPI serves the built SPA on :7860)
 ```
 

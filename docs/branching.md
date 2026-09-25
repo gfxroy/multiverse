@@ -55,6 +55,10 @@ The returned tokens (and their logprobs) are appended after the forced token. Th
 is marked `method: "chat-continuation"` in the tree, and the UI shows which method produced
 each node.
 
+The static GitHub Pages build does the same thing from the browser
+([`frontend/src/engine/openai.ts`](../frontend/src/engine/openai.ts) and
+[`engine/tree.ts`](../frontend/src/engine/tree.ts) are ports of the backend code).
+
 The native **Gemini** provider does the same thing in Gemini's `contents` format: a `user`
 turn with the prompt, a `model` turn with the prefix and forced token, and a `user` turn
 with the continue instruction. It reads per-token distributions from

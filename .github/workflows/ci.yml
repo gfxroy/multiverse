@@ -52,6 +52,8 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
+      - name: Static build (GitHub Pages)
+        run: npm run build:pages
 
   docker:
     runs-on: ubuntu-latest
